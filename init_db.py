@@ -12,15 +12,19 @@ try:
 
     with connection.cursor() as cursor:
         cursor.execute(
-            "drop table if exists mainmenu;"
+            """create table if not exists mainmenu (
+                id serial primary key,
+                title varchar(100) not null,
+                url varchar(50) not null);"""
         )
 
     with connection.cursor() as cursor:
         cursor.execute(
-            """create table mainmenu (
+            """create table if not exists posts (
                 id serial primary key,
                 title varchar(100) not null,
-                url varchar(50) not null);"""
+                text text not null,
+                date date not null);"""
         )
 
         connection.commit()

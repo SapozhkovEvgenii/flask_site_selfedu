@@ -1,28 +1,61 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, flash, g
+from config import SECRET_KEY, DB_PASSWORD, DB_USERNAME
+import psycopg2
+from format_db import FormatDataBase
 
 
 app = Flask(__name__)
 
-menu = [{"name": "Setup", "url": "install-flask"},
-        {"name": "First app", "url": "first-app"},
-        {"name": "Feedback", "url": "contact"}]
+app.config['SECRET_KEY'] = SECRET_KEY
+
+
+def connect_db():
+    connection = psycopg2.connect(
+        host='localhost',
+        database='flask_selfedu',
+        user=DB_USERNAME,
+        password=DB_PASSWORD
+    )
+
+    return connection
+
+
+def get_db():
+    if not hasattr(g, 'link_db'):
+        g.link_db = connect_db()
+    return g.link_db
+
+
+@app.teardown_appcontext
+def close_db(error):
+    if hasattr(g, 'link_db'):
+        g.link_db.close()
 
 
 @app.route("/")
 def index():
-    return render_template('index.html', title='About Flask', menu=menu)
+    db = get_db()
+    dbase = FormatDataBase(db)
+    return render_template('index.html', menu=dbase.get_menu())
 
 
-@app.route("/about")
-def about():
-    return render_template('about.html', title='About site', menu=menu)
-
-
-@app.route("/contact", methods=['POST', 'GET'])
-def contact():
+@app.route("/add_post", methods=['POST', 'GET'])
+def add_post():
+    db = get_db()
+    dbase = FormatDataBase(db)
     if request.method == 'POST':
-        print(request.form['email'])
-    return render_template('contact.html', title='Feedback', menu=menu)
+        if len(request.form['title']) > 3 and len(request.form['text']) > 10:
+            result = dbase.add_post(
+                request.form['title'], request.form['text'])
+            if not result:
+                flash('Error addiing post', category='error')
+            else:
+                flash('Article added successfully', category='success')
+        else:
+            flash('Error addiing post', category='error')
+
+    return render_template('add_post.html',
+                           menu=dbase.get_menu(), title='Adding post')
 
 
 if __name__ == "__main__":
