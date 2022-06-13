@@ -1,11 +1,11 @@
-from psycopg2.extras import DictCursor
 from datetime import date
 
 
 class FormatDataBase():
-    def __init__(self, db):
+    def __init__(self, db, type_data=None):
         self.__db = db
-        self.__cursor = db.cursor(cursor_factory=DictCursor)
+        self.type_data = type_data
+        self.__cursor = db.cursor(cursor_factory=self.type_data)
 
     def get_menu(self):
         sql = """select * from mainmenu;"""
@@ -30,3 +30,14 @@ class FormatDataBase():
             return False
 
         return True
+
+    def get_post(self, id_post):
+        try:
+            sql = f"select title, text from posts where id = {id_post};"
+            self.__cursor.execute(sql)
+            result = self.__cursor.fetchone()
+            return result
+        except Exception as _ex:
+            print("[INFO] Error reading from database", _ex)
+
+        return (False, False)

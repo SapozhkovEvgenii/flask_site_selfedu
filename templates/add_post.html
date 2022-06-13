@@ -7,9 +7,9 @@
 {% endfor %}
 
 <form action="{{url_for('add_post')}}" method="post" class="form-contact">
-<p><label>Title article: </label> <input type="text" name="title" value="" requied />
+<p><label>Title article: </label> <input type="text" name="title" value="requied" />
 <p><label>Text article:</label>
 <p><textarea name="text" rows=7 cols=40></textarea>
-<p><input type="submit" value="Добавить" />
+<p><input type="submit" value="Add article" />
 </form>
 {% endblock %}
