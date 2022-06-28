@@ -18,12 +18,19 @@ class FormatDataBase():
             print("[INFO] Error reading from database", _ex)
         return []
 
-    def add_post(self, title, text):
+    def add_post(self, title, url, text):
         try:
+            query_exist_url = """select count(url) as count from posts
+                                 where url like %s;"""
+            self.__cursor.execute(query_exist_url, (url,))
+            res = self.__cursor.fetchone()
+            if res['count'] > 0:
+                print("An article with this url exists")
+                return False
             date_post = date.today()
-            sql = """insert into posts (title, text, date)
-                      values (%s, %s, %s);"""
-            self.__cursor.execute(sql, (title, text, date_post))
+            sql = """insert into posts (title, url, text, date)
+                      values (%s, %s, %s, %s);"""
+            self.__cursor.execute(sql, (title, url, text, date_post))
             self.__db.commit()
         except Exception as _ex:
             print("[INFO] Error adding data in database", _ex)
@@ -31,10 +38,10 @@ class FormatDataBase():
 
         return True
 
-    def get_post(self, id_post):
+    def get_post(self, alias):
         try:
-            sql = "select title, text from posts where id = %s;"
-            self.__cursor.execute(sql, (id_post,))
+            sql = "select title, text from posts where url like %s;"
+            self.__cursor.execute(sql, (alias,))
             result = self.__cursor.fetchone()
             if result:
                 return result
@@ -45,7 +52,7 @@ class FormatDataBase():
 
     def get_all_posts(self):
         try:
-            sql = "select id, title, text from posts order by date desc;"
+            sql = "select title, url, text from posts order by date desc;"
             self.__cursor.execute(sql)
             result = self.__cursor.fetchall()
             if result:

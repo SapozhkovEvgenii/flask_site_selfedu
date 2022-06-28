@@ -48,7 +48,9 @@ def add_post():
     if request.method == 'POST':
         if len(request.form['title']) > 3 and len(request.form['text']) > 10:
             result = dbase.add_post(
-                request.form['title'], request.form['text'])
+                request.form['title'],
+                request.form['url'],
+                request.form['text'])
             if not result:
                 flash('Error addiing post', category='error')
             else:
@@ -61,11 +63,11 @@ def add_post():
                            title='Adding post')
 
 
-@app.route("/posts/<int:id_post>")
-def show_post(id_post):
+@app.route("/posts/<alias>")
+def show_post(alias):
     db = get_db()
     dbase = FormatDataBase(db)
-    title, text = dbase.get_post(id_post)
+    title, text = dbase.get_post(alias)
     if not title:
         abort(404)
     return render_template("show_post.html",

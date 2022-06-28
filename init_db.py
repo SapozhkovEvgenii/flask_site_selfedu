@@ -24,6 +24,7 @@ try:
                 id serial primary key,
                 title varchar(100) not null,
                 text text not null,
+                url varchar(100) not null,
                 date date not null);"""
         )
 
