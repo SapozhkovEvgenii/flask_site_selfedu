@@ -1,5 +1,8 @@
 from datetime import date
+from fileinput import filename
 from psycopg2.extras import DictCursor
+from flask import url_for
+import re
 
 
 class FormatDataBase():
@@ -27,6 +30,9 @@ class FormatDataBase():
             if res['count'] > 0:
                 print("An article with this url exists")
                 return False
+            base = url_for('static', filename='images_html')
+            text = re.sub(r"(?P<tag><img\s+[^>]*src=)(?P<quote>[\"'])(?P<path>.+?)(?P=quote)>",
+                          "\\g<tag>" + base + r"/\g<path>>", text)
             date_post = date.today()
             sql = """insert into posts (title, url, text, date)
                       values (%s, %s, %s, %s);"""
