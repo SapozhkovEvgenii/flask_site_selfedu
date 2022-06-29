@@ -29,7 +29,18 @@ try:
         )
 
         connection.commit()
-        print("[INFO] create table")
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """create table if not exists users (
+                id serial primary key,
+                name varchar(100) not null,
+                email text not null,
+                password text not null,
+                date_register date not null);"""
+        )
+
+        connection.commit()
 
 except Exception as _ex:
     print("[INFO] Error while working with PosgreSQL", _ex)
