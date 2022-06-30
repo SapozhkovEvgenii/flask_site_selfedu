@@ -1,7 +1,6 @@
 from datetime import date
-from fileinput import filename
 from psycopg2.extras import DictCursor
-from flask import url_for
+from flask import url_for, flash
 import re
 
 
@@ -67,3 +66,25 @@ class FormatDataBase():
             print("[INFO] Error reading from database", _ex)
 
         return []
+
+    def add_user(self, name, email, hash_psw):
+        try:
+            query_exist_email = """select count(email) as count from users
+                                 where email like %s;"""
+            self.__cursor.execute(query_exist_email, (email,))
+            res = self.__cursor.fetchone()
+            if res['count'] > 0:
+                flash("User with this email exist", category='error')
+                print('[INFO] Error adding data in database')
+                return False
+
+            date_user = date.today()
+            sql = """insert into users (name, email, password, date_register)
+                      values (%s, %s, %s, %s);"""
+            self.__cursor.execute(sql, (name, email, hash_psw, date_user))
+            self.__db.commit()
+        except Exception as _ex:
+            print("[INFO] Error adding data in database", _ex)
+            return False
+
+        return True
