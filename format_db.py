@@ -88,3 +88,33 @@ class FormatDataBase():
             return False
 
         return True
+
+    def get_user(self, user_id):
+        try:
+            query_get_user = "select * from users where id = %s limit 1"
+            self.__cursor.execute(query_get_user, (user_id,))
+            res = self.__cursor.fetchone()
+            if not res:
+                print("User is not found")
+                return False
+
+            return res
+        except Exception as _ex:
+            print("[INFO] Error reading from database", _ex)
+
+        return False
+
+    def get_user_by_email(self, email):
+        try:
+            query_user_email = "select * from users where email = %s limit 1"
+            self.__cursor.execute(query_user_email, (email,))
+            res = self.__cursor.fetchone()
+            if not res:
+                print("User is not found")
+                return False
+
+            return res
+        except Exception as _ex:
+            print("[INFO] Error reading from database", _ex)
+
+        return False

@@ -3,12 +3,21 @@ from flask import (Flask, render_template, request, flash, g,
 from config import SECRET_KEY, DB_PASSWORD, DB_USERNAME
 import psycopg2
 from format_db import FormatDataBase
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 import validators
 import re
+from user_login import UserLogin
+from flask_login import LoginManager, login_user, login_required
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
+
+login_manager = LoginManager(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return UserLogin().from_db(user_id, dbase)
 
 
 def connect_db():
@@ -73,6 +82,7 @@ def add_post():
 
 
 @app.route("/posts/<alias>")
+@login_required
 def show_post(alias):
     title, text = dbase.get_post(alias)
     if not title:
@@ -82,8 +92,17 @@ def show_post(alias):
                            title=title, text=text)
 
 
-@app.route("/login")
+@app.route("/login", methods=['POST', 'GET'])
 def login():
+    if request.method == "POST":
+        user = dbase.get_user_by_email(request.form['email'])
+        if user and check_password_hash(user['password'], request.form['psw']):
+            userlogin = UserLogin().create(user)
+            login_user(userlogin)
+            return redirect(url_for('index'))
+
+        flash("Invalid email/password pair", category='error')
+
     return render_template("login.html", menu=dbase.get_menu(), title="Login")
 
 
