@@ -9,6 +9,8 @@ import re
 from user_login import UserLogin
 from flask_login import (LoginManager, login_user, login_required,
                          logout_user, current_user)
+from werkzeug.utils import secure_filename
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
@@ -157,8 +159,9 @@ def register():
 @app.route('/profile')
 @login_required
 def profile():
-    return f"""<a href="{url_for('logout')}">logout</a>
-                user info: {current_user.get_id()}"""
+    return render_template('profile.html',
+                           menu=dbase.get_menu(),
+                           title='Profile')
 
 
 @app.route('/logout')
@@ -167,6 +170,33 @@ def logout():
     logout_user()
     flash('You are logged out', category='success')
     return redirect(url_for('login'))
+
+
+@app.route('/upload', methods=['GET', 'POST'])
+@login_required
+def upload():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and current_user.allowed_file_avatar(file.filename):
+            try:
+                filename = secure_filename(file.filename)
+                file_path = os.path.join('static', 'images_html',
+                                         'avatar', filename)
+                file.save(file_path)
+                try:
+                    user_id = current_user.get_id()
+                    res = dbase.upload_avatar(file_path, user_id)
+                    if not res:
+                        flash('Avatar upload successful', category='success')
+                        return redirect(url_for('profile'))
+
+                except Exception as _ex:
+                    flash("[INFO] Error avatar upload", _ex)
+
+            except FileNotFoundError:
+                flash("File read error", category='error')
+
+    return redirect(url_for('profile'))
 
 
 if __name__ == "__main__":

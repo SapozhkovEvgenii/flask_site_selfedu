@@ -9,8 +9,8 @@
          <tr><td valign="top">
                    <div class="profile-ava"><img src="{{ current_user.get_ava() }}"></div>
                    <div class="profile-load">
-                   <form action="#" method="POST" enctype="multipart/form-data">
-                            <input type="file" name="file" value="Select file">
+                   <form action="{{ url_for('upload') }}" method="POST" enctype="multipart/form-data">
+                            <input type=file name="file">
                             <p><input type="submit" value="Download"></p>
                    </form>
                    </div>

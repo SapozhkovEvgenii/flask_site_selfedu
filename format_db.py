@@ -79,8 +79,8 @@ class FormatDataBase():
                 return False
 
             date_user = date.today()
-            sql = """insert into users (name, email, password, date_register)
-                      values (%s, %s, %s, %s);"""
+            sql = """insert into users (name, email, password, date_register, avatar)
+                      values (%s, %s, %s, %s, null);"""
             self.__cursor.execute(sql, (name, email, hash_psw, date_user))
             self.__db.commit()
         except Exception as _ex:
@@ -116,5 +116,20 @@ class FormatDataBase():
             return res
         except Exception as _ex:
             print("[INFO] Error reading from database", _ex)
+
+        return False
+
+    def upload_avatar(self, path, user_id):
+        try:
+            query_update_avatar = "update users set avatar = %s where id = %s"
+            self.__cursor.execute(query_update_avatar, (path, user_id))
+            res = self.__db.commit()
+            if not res:
+                print("[INFO] Error update database")
+                return False
+
+            return True
+        except Exception as _ex:
+            print("[INFO] Error update database", _ex)
 
         return False
