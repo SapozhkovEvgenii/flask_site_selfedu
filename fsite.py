@@ -11,6 +11,7 @@ from flask_login import (LoginManager, login_user, login_required,
                          logout_user, current_user)
 from werkzeug.utils import secure_filename
 import os
+from forms import LoginForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
@@ -102,18 +103,19 @@ def show_post(alias):
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('profile'))
-
-    if request.method == "POST":
-        user = dbase.get_user_by_email(request.form['email'])
-        if user and check_password_hash(user['password'], request.form['psw']):
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = dbase.get_user_by_email(form.email.data)
+        if user and check_password_hash(user['password'], form.password.data):
             userlogin = UserLogin().create(user)
-            rm = True if request.form.get('remainme') else False
+            rm = form.remember.data
             login_user(userlogin, remember=rm)
             return redirect(request.args.get("next") or url_for("profile"))
 
         flash("Invalid email/password pair", category='error')
 
-    return render_template("login.html", menu=dbase.get_menu(), title="Login")
+    return render_template("login.html", menu=dbase.get_menu(), title="Login",
+                           form=form)
 
 
 pattern_psw = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&-])[A-Za-z\d@$!%*#?&-]{8,}$'
@@ -190,8 +192,8 @@ def upload():
                         flash('Avatar upload successful', category='success')
                         return redirect(url_for('profile'))
 
-                except Exception as _ex:
-                    flash("[INFO] Error avatar upload", _ex)
+                except Exception:
+                    flash("[INFO] Error avatar upload", category='error')
 
             except FileNotFoundError:
                 flash("File read error", category='error')
