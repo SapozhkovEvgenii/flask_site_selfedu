@@ -11,7 +11,7 @@ from flask_login import (LoginManager, login_user, login_required,
                          logout_user, current_user)
 from werkzeug.utils import secure_filename
 import os
-from forms import LoginForm
+from forms import LoginForm, RegisterForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
@@ -124,15 +124,16 @@ pattern_psw = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&-])[A-Za-z\d@$!%*#?
 @app.route("/register", methods=['POST', 'GET'])
 def register():
     global pattern_psw
-    if request.method == 'POST':
+    form = RegisterForm()
+    if form.validate_on_submit():
         session.pop('_flashes', None)
-        if len(request.form['name']) > 4 \
-                and validators.email(request.form['email']) \
-                and re.match(pattern_psw, request.form['psw']) \
-                and request.form['psw'] == request.form['psw2']:
-            hash_psw = generate_password_hash(request.form['psw'])
-            res = dbase.add_user(request.form['name'],
-                                 request.form['email'],
+        if len(form.name.data) > 4 \
+                and validators.email(form.email.data) \
+                and re.match(pattern_psw, form.password.data) \
+                and form.password.data == form.password_repeat.data:
+            hash_psw = generate_password_hash(form.password.data)
+            res = dbase.add_user(form.name.data,
+                                 form.email.data,
                                  hash_psw)
             if res:
                 flash('Registration successful', category='success')
@@ -140,22 +141,21 @@ def register():
             else:
                 flash('[INFO] Error adding data in database', category='error')
         else:
-            if len(request.form['name']) < 4:
+            if len(form.name.data) < 4:
                 flash("""Username has incorrect format.
                     You must use more than 4 characters""", category='error')
-            if re.match(pattern_psw, request.form['psw']) is None:
+            if not validators.email(form.email.data):
+                flash('Email has incorrect format.', category='error')
+            if re.match(pattern_psw, form.password.data) is None:
                 flash("""Password has incorrect format.
                     You have to use the following characters:
                     [a-z][A-Z][0-9][@$!%*#?&-]""", category='error')
-            if not validators.email(request.form['email']):
-                flash('Email has incorrect format.', category='error')
-            if request.form['psw'] != request.form['psw2']:
+            if form.password.data != form.password_repeat.data:
                 flash('Passwords do not match.', category='error')
 
     return render_template(
-        "register.html",
-        menu=dbase.get_menu(),
-        title="Registration")
+        "register.html", menu=dbase.get_menu(),
+        title="Registration", form=form)
 
 
 @app.route('/profile')
