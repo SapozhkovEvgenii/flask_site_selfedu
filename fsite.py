@@ -12,9 +12,12 @@ from flask_login import (LoginManager, login_user, login_required,
 from werkzeug.utils import secure_filename
 import os
 from forms import LoginForm, RegisterForm
+from admin.admin import admin
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
+app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024
+app.register_blueprint(admin, url_prefix='/admin')
 
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
