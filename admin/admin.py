@@ -1,11 +1,28 @@
 from flask import (Blueprint, request, redirect, url_for, flash,
-                   render_template, session)
+                   render_template, session, g)
+from psycopg2.extras import DictCursor
 
 admin = Blueprint('admin', __name__, template_folder='templates',
                   static_folder='static')
 
 menu = [{'url': '.index', 'title': 'Panel'},
+        {'url': '.list_posts', 'title': 'List posts'},
         {'url': '.logout', 'title': 'Logout'}]
+
+db = None
+
+
+@admin.before_request
+def before_request():
+    global db
+    db = g.get('link_db')
+
+
+@admin.teardown_request
+def teardown_request(request):
+    global db
+    db = None
+    return request
 
 
 def login_admin():
@@ -51,3 +68,20 @@ def logout():
     logout_admin()
 
     return redirect(url_for('.login'))
+
+
+@admin.route('/list_posts')
+def list_posts():
+    if not is_logged():
+        return redirect(url_for('.login'))
+    if db:
+        try:
+            cursor = db.cursor(cursor_factory=DictCursor)
+            sql = "select title, url, text from posts order by date desc;"
+            cursor.execute(sql)
+            list = cursor.fetchall()
+        except Exception as _ex:
+            print("[INFO] Error reading from database", _ex)
+
+    return render_template("admin/list_posts.html", menu=menu,
+                           title="List posts", list=list)

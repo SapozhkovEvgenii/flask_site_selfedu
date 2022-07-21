@@ -45,7 +45,7 @@ class FormatDataBase():
 
     def get_post(self, alias):
         try:
-            sql = "select title, text from posts where url like %s;"
+            sql = "select title, text from posts where url like %s limit 1;"
             self.__cursor.execute(sql, (alias,))
             result = self.__cursor.fetchone()
             if result:
@@ -91,7 +91,7 @@ class FormatDataBase():
 
     def get_user(self, user_id):
         try:
-            query_get_user = "select * from users where id = %s limit 1"
+            query_get_user = "select * from users where id = %s limit 1;"
             self.__cursor.execute(query_get_user, (user_id,))
             res = self.__cursor.fetchone()
             if not res:
@@ -106,7 +106,7 @@ class FormatDataBase():
 
     def get_user_by_email(self, email):
         try:
-            query_user_email = "select * from users where email = %s limit 1"
+            query_user_email = "select * from users where email = %s limit 1;"
             self.__cursor.execute(query_user_email, (email,))
             res = self.__cursor.fetchone()
             if not res:
@@ -121,7 +121,7 @@ class FormatDataBase():
 
     def upload_avatar(self, path, user_id):
         try:
-            query_update_avatar = "update users set avatar = %s where id = %s"
+            query_update_avatar = "update users set avatar = %s where id = %s;"
             self.__cursor.execute(query_update_avatar, (path, user_id))
             res = self.__db.commit()
             if not res:
