@@ -7,6 +7,7 @@ admin = Blueprint('admin', __name__, template_folder='templates',
 
 menu = [{'url': '.index', 'title': 'Panel'},
         {'url': '.list_posts', 'title': 'List posts'},
+        {'url': '.list_users', 'title': 'List users'},
         {'url': '.logout', 'title': 'Logout'}]
 
 db = None
@@ -85,3 +86,20 @@ def list_posts():
 
     return render_template("admin/list_posts.html", menu=menu,
                            title="List posts", list=list)
+
+
+@admin.route('/list_users')
+def list_users():
+    if not is_logged():
+        return redirect(url_for('.login'))
+    if db:
+        try:
+            cursor = db.cursor(cursor_factory=DictCursor)
+            sql = "select name, email, date_register from users order by name;"
+            cursor.execute(sql)
+            list_users = cursor.fetchall()
+        except Exception as _ex:
+            print("[INFO] Error reading from database", _ex)
+
+    return render_template("admin/list_users.html", menu=menu,
+                           title="List users", users=list_users)
