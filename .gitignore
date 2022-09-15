@@ -130,4 +130,4 @@ dmypy.json
 .idea/
 .vscode/
 .env
-
+flask_db.session.sql

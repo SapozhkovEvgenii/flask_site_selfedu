@@ -32,7 +32,8 @@ def load_user(user_id):
 
 def connect_db():
     connection = psycopg2.connect(
-        host='localhost',
+        host='db',
+        port=5432,
         database='flask_selfedu',
         user=DB_USERNAME,
         password=DB_PASSWORD
@@ -72,6 +73,7 @@ def index():
 
 
 @app.route("/add_post", methods=['POST', 'GET'])
+@login_required
 def add_post():
     if request.method == 'POST':
         if len(request.form['title']) > 3 and len(request.form['text']) > 10:
@@ -205,4 +207,4 @@ def upload():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=8090, debug=True)

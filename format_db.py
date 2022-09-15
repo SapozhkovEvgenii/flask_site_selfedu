@@ -4,7 +4,7 @@ from flask import url_for, flash
 import re
 
 
-class FormatDataBase():
+class FormatDataBase:
     def __init__(self, db):
         self.__db = db
         self.__cursor = db.cursor(cursor_factory=DictCursor)
@@ -53,7 +53,7 @@ class FormatDataBase():
         except Exception as _ex:
             print("[INFO] Error reading from database", _ex)
 
-        return (False, False)
+        return False, False
 
     def get_all_posts(self):
         try:

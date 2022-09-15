@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  web:
+    image: app-flask
+    command: bash -c "python fsite.py"
+    ports:
+      - "8090:8090"
+    environment:
+      - DATABASE_HOST=db
+      - POSTGRES_USER=selfedu
+      - POSTGRES_PASSWORD=tsz1985es
+      - POSTGRES_DB=flask_selfedu
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+
+  db:
+    image: postgres
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+      - psql_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=selfedu
+      - POSTGRES_PASSWORD=tsz1985es
+      - POSTGRES_DB=flask_selfedu
+
+volumes:
+  psql_data:
+    driver: local
